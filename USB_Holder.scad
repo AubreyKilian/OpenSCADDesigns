@@ -1,8 +1,8 @@
 
 e = 0.01;
 e2 = e*2;
-w_adj = 0;
-h_adj = 0.5;
+w_adj = 2;
+h_adj = 1;
 
 DriveDepth = 117.1;
 DriveHeight = 80;
@@ -14,13 +14,13 @@ ThinDriveWidth = 14.5;
 // DriveWidth = 20;
 // ThinDriveWidth = 10;
 
-DriveWidths = [ThinDriveWidth, ThinDriveWidth, DriveWidth, DriveWidth, ThinDriveWidth];
+DriveWidths = [DriveWidth, DriveWidth, DriveWidth, ThinDriveWidth];
 NumDrives = len(DriveWidths);
 
 WallWidth = 1;
-FloorHeight = 2;
+FloorHeight = 1;
 RoofHeight = WallWidth;
-WedgeWidth = 2;
+WedgeWidth = 0;
 WedgeStopFromBottom = DriveHeight/4;
 
 CageHeight = DriveHeight + FloorHeight + RoofHeight + h_adj; 
@@ -30,7 +30,9 @@ CageDepth = DriveDepth + WallWidth;
 module main() {
     difference() {
         DriveBays(NumDrives);
-        //RoofChopOff();
+        // RoofChopOff();
+        PokeHoles(9,7,CageDepth-WallWidth,CageHeight-FloorHeight-RoofHeight,CageWidth,4.5, FloorHeight);
+
     }
 }
 
@@ -105,6 +107,32 @@ module OneDrive(width=DriveWidth) {
 
 module OneWedgeSpace() {
     cube(size=[WedgeWidth, DriveDepth, DriveHeight + h_adj]);
+}
+
+module PokeHoles(numX, numY, width, height, depth, radius, offsetFromFloor) {
+    Xo = height/numY;
+    Yo = width/numX;
+    rotate([0,90,0]) mirror([1,0,0])
+    union() {
+        for (i=[0:1:numY-1]) {
+            m = i % 2;
+            OneHoleRow(numX, i, Xo, Yo, depth, radius, m, offsetFromFloor);
+        }
+    }
+}
+
+module OneHoleRow(num, rowNum, Xo, Yo, depth, radius, m, offsetFromFloor) {
+
+            for (j=[0:1:num-1-m]) {
+                x = rowNum*Xo + (Xo/2) + offsetFromFloor;
+                y = (j)*Yo + (Yo/2) + Yo * 0.5 * m;
+
+                // Don't change this
+                translate([x,y,-e])
+                rotate([0,0,90])
+                    cylinder(r=radius, h=depth+e2, center=false, $fn=6);
+            }   
+
 }
 
 function PartialList(list,start,end) = [for (i = [start:end]) list[i]];
